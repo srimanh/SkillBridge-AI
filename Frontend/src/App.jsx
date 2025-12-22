@@ -1,13 +1,14 @@
-import "./App.css"
+import React from 'react';
+import { ThemeProvider } from './context/ThemeContext';
+import { Dashboard } from './components/Dashboard';
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <h1 className="text-3xl font-bold text-blue-600">
-        SkillBridge AI
-      </h1>
-    </div>
+    <ThemeProvider>
+      <Dashboard />
+    </ThemeProvider>
   );
 }
 
 export default App;
+;

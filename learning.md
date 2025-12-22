@@ -90,3 +90,22 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 - **Semantic Matching**: LLMs provide deeper insights than simple keyword scanners
 - **JSON-First Design**: Forcing structured output from LLMs is critical for stable backends
 - **Context Injection**: Passing JD and Resume as distinct context blocks improves accuracy
+
+## 🎨 Hour 4 — Premium Dashboard UI
+
+### Frontend Development
+- Built a **premium dashboard** using React and Tailwind CSS
+- Implemented **GSAP entrance animations** for a high-end feel
+- Added **Light/Dark mode support** with smooth transitions
+- Designed an **intuitive results visualization** (Score, Skills, Feedback) 
+- Integrated with Backend API using asynchronous fetch calls
+
+### UI/UX Design
+- **Glassmorphism**: Used backdrop blur and semi-transparent borders for a modern look
+- **Dynamic Scorebar**: Animated progress indicator reflects AI analysis results
+- **Responsive Layout**: Clean split-screen input area for seamless data entry
+
+### Key Learning
+- **Aesthetic Matters**: A premium UI builds trust in AI-driven results
+- **Motion Design**: Subtle GSAP animations guide user focus without being distracting
+- **Contextual Visualization**: Using color-coded tags (Red for missing, Amber for weak) makes analysis scannable
