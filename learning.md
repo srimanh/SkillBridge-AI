@@ -52,3 +52,23 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 ## ✅ Status
 - Backend and frontend environments successfully initialized
 - Project ready for API and UI feature development
+
+
+## ⏱️ Hour 2 — Backend API Skeleton & Contracts
+
+### Backend Development
+- Created REST controllers using Spring Boot
+- Implemented health check endpoint (`/api/health`)
+- Designed resume analysis endpoint (`/api/analyze-resume`)
+- Defined request and response DTOs for API communication
+- Returned hardcoded JSON responses to validate API contracts
+
+### Architecture & Structure
+- Followed Controller → Service → DTO layering
+- Organized code into clear packages for scalability
+- Ensured controllers contain no business logic
+
+### Key Learning
+- Designing API contracts early simplifies frontend integration
+- DTO-based communication enforces structured, predictable responses
+- Separating concerns improves maintainability and testing
