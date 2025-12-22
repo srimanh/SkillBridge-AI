@@ -72,3 +72,21 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 - Designing API contracts early simplifies frontend integration
 - DTO-based communication enforces structured, predictable responses
 - Separating concerns improves maintainability and testing
+
+## 🧠 Hour 3 — AI Integration & Semantic Analysis
+
+### AI Engineering
+- Integrated **Spring AI (OpenAI)** for core intelligence
+- Designed a **Senior Technical Recruiter prompt** for semantic resume analysis
+- Enforced **strict JSON output** using LLM system instructions
+- Mapped LLM responses directly to existing Java DTOs
+
+### Prompt Engineering
+- Instructed AI to compare meaning (semantic), not just keywords
+- Defined a structured JSON schema for consistent parsing
+- Added clear boundaries to prevent AI from returning markdown or conversational text
+
+### Key Learning
+- **Semantic Matching**: LLMs provide deeper insights than simple keyword scanners
+- **JSON-First Design**: Forcing structured output from LLMs is critical for stable backends
+- **Context Injection**: Passing JD and Resume as distinct context blocks improves accuracy
