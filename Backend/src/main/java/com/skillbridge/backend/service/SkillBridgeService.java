@@ -184,4 +184,91 @@ public class SkillBridgeService {
       throw new RuntimeException("Answer evaluation failed: " + e.getMessage());
     }
   }
+
+  public InterviewSummaryResponseDTO generateInterviewSummary(InterviewSummaryRequestDTO request) {
+    List<SkillScoreDTO> evals = request.getEvaluations();
+    if (evals == null || evals.isEmpty()) {
+      throw new IllegalArgumentException("No evaluations provided for summary.");
+    }
+
+    // 1. Calculate Average Score
+    double total = 0;
+    for (SkillScoreDTO eval : evals) {
+      total += eval.getScore();
+    }
+    double average = Math.round((total / evals.size()) * 10.0) / 10.0;
+
+    // 2. Classify Readiness
+    String level;
+    if (average <= 4)
+      level = "Not Ready";
+    else if (average <= 6)
+      level = "Needs Improvement";
+    else if (average <= 8)
+      level = "Almost Ready";
+    else
+      level = "Interview Ready";
+
+    // 3. Simple Strength/Weak extraction (Java-side for consistency)
+    List<String> strengths = evals.stream()
+        .filter(e -> e.getScore() >= 7)
+        .map(SkillScoreDTO::getSkill)
+        .distinct()
+        .toList();
+    List<String> weaknesses = evals.stream()
+        .filter(e -> e.getScore() <= 5)
+        .map(SkillScoreDTO::getSkill)
+        .distinct()
+        .toList();
+
+    // 4. Generate AI Summary
+    String systemPrompt = """
+        You are a Brutally Honest Career Intelligence Engine.
+        Your task is to provide a final decision-making summary for a candidate's interview readiness.
+
+        Rules:
+        1. Be concise (one paragraph).
+        2. Be professional but direct (Closing punch of the demo).
+        3. Explain WHY the candidate received their readiness status based on the provided skills and scores.
+        4. Focus on the transition from 'current state' to 'interview ready'.
+
+        Return ONLY the summary text. No JSON, no markdown.
+        """;
+
+    String userPrompt = """
+        ROLE: {role}
+        AVERAGE SCORE: {average}
+        READINESS LEVEL: {level}
+        STRENGTHS: {strengths}
+        WEAKNESSES: {weaknesses}
+        FULL EVALUATIONS: {evals}
+        """;
+
+    PromptTemplate template = new PromptTemplate(userPrompt);
+    Map<String, Object> model = Map.of(
+        "role", request.getRole(),
+        "average", average,
+        "level", level,
+        "strengths", strengths,
+        "weaknesses", weaknesses,
+        "evals", evals);
+
+    try {
+      String aiSummary = chatClient.prompt()
+          .system(systemPrompt)
+          .user(template.create(model).getContents())
+          .call()
+          .content();
+
+      InterviewSummaryResponseDTO response = new InterviewSummaryResponseDTO();
+      response.setOverallScore(average);
+      response.setReadinessLevel(level);
+      response.setStrengthAreas(strengths);
+      response.setWeakAreas(weaknesses);
+      response.setSummary(aiSummary);
+      return response;
+    } catch (Exception e) {
+      throw new RuntimeException("Final summary generation failed: " + e.getMessage());
+    }
+  }
 }

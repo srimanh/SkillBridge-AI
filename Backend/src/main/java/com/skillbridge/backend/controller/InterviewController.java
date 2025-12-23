@@ -46,4 +46,19 @@ public class InterviewController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @PostMapping("/interview-summary")
+    public ResponseEntity<InterviewSummaryResponseDTO> generateSummary(
+            @RequestBody InterviewSummaryRequestDTO request) {
+        if (request.getEvaluations() == null || request.getEvaluations().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            InterviewSummaryResponseDTO response = skillBridgeService.generateInterviewSummary(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
