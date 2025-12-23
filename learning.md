@@ -109,3 +109,16 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 - **Aesthetic Matters**: A premium UI builds trust in AI-driven results
 - **Motion Design**: Subtle GSAP animations guide user focus without being distracting
 - **Contextual Visualization**: Using color-coded tags (Red for missing, Amber for weak) makes analysis scannable
+
+
+## ⏱️ Hour 5 — Mock Interview Generator
+
+### Backend & AI Logic
+- Designed AI prompt to generate role-specific interview questions
+- Built structured interview question API
+- Linked resume weaknesses to interview pressure points
+
+### Key Learning
+- AI features are stronger when driven by context, not randomness
+- Structured AI output is essential for scalable products
+- Interviews test depth — AI must do the same
