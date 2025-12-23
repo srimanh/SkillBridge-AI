@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Send, ChevronLeft, Terminal, BrainCircuit } from 'lucide-react';
 import { FeedbackCard } from './FeedbackCard';
+import { ReadinessSummary } from './ReadinessSummary';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs) {
+    return twMerge(clsx(inputs));
+}
 
 export const InterviewPage = ({ sessionData, onBack }) => {
     const [questions, setQuestions] = useState([]);
@@ -9,6 +16,9 @@ export const InterviewPage = ({ sessionData, onBack }) => {
     const [loading, setLoading] = useState(true);
     const [evaluating, setEvaluating] = useState(false);
     const [evaluation, setEvaluation] = useState(null);
+    const [allEvaluations, setAllEvaluations] = useState([]);
+    const [summaryLoading, setSummaryLoading] = useState(false);
+    const [finalSummary, setFinalSummary] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -46,13 +56,14 @@ export const InterviewPage = ({ sessionData, onBack }) => {
         setEvaluation(null);
 
         try {
+            const currentQuestion = questions[currentIdx];
             const response = await fetch('http://localhost:8080/api/evaluate-answer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    question: questions[currentIdx].question,
+                    question: currentQuestion.question,
                     answer: answer,
-                    skill: questions[currentIdx].skill,
+                    skill: currentQuestion.skill,
                     jobRole: sessionData.jobRole || "Software Engineer"
                 }),
             });
@@ -61,10 +72,43 @@ export const InterviewPage = ({ sessionData, onBack }) => {
 
             const data = await response.json();
             setEvaluation(data);
+
+            // Store in allEvaluations for the final summary
+            const newEval = { skill: currentQuestion.skill, score: data.score };
+            setAllEvaluations(prev => {
+                const filtered = prev.filter(e => e.skill !== currentQuestion.skill);
+                return [...filtered, newEval];
+            });
+
         } catch (err) {
             setError(err.message);
         } finally {
             setEvaluating(false);
+        }
+    };
+
+    const handleGenerateSummary = async () => {
+        setSummaryLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('http://localhost:8080/api/interview-summary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    role: sessionData.jobRole || "Software Engineer",
+                    evaluations: allEvaluations
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to generate final readiness report.');
+
+            const data = await response.json();
+            setFinalSummary(data);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setSummaryLoading(false);
         }
     };
 
@@ -83,6 +127,10 @@ export const InterviewPage = ({ sessionData, onBack }) => {
         );
     }
 
+    if (finalSummary) {
+        return <ReadinessSummary summaryData={finalSummary} onRestart={onBack} />;
+    }
+
     if (error && !questions.length) {
         return (
             <div className="min-h-[40vh] flex flex-col items-center justify-center text-rose-500">
@@ -95,6 +143,7 @@ export const InterviewPage = ({ sessionData, onBack }) => {
     }
 
     const currentQuestion = questions[currentIdx];
+    const isLastQuestion = currentIdx === questions.length - 1;
 
     return (
         <div className="max-w-4xl mx-auto space-y-10 py-12 animate-in fade-in duration-700">
@@ -140,42 +189,65 @@ export const InterviewPage = ({ sessionData, onBack }) => {
                     onChange={(e) => setAnswer(e.target.value)}
                     placeholder="Type your detailed answer here..."
                     className="w-full h-64 p-8 rounded-[32px] bg-surface border-2 border-border focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/5 focus:outline-none resize-none transition-all text-lg leading-relaxed shadow-inner"
-                    disabled={evaluating}
+                    disabled={evaluating || summaryLoading}
                 />
             </div>
 
             {/* Action */}
             <div className="flex flex-col items-center gap-6">
-                <button
-                    onClick={handleEvaluate}
-                    disabled={evaluating || !answer.trim()}
-                    className="w-full max-w-md py-6 bg-indigo-500 text-white rounded-[24px] font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 shadow-2xl shadow-indigo-500/25"
-                >
-                    {evaluating ? (
-                        <>
-                            <Loader2 className="animate-spin" size={24} />
-                            Evaluating Response...
-                        </>
-                    ) : (
-                        <>
-                            <Send size={20} />
-                            Evaluate Answer
-                        </>
-                    )}
-                </button>
-
-                {evaluation && currentIdx < questions.length - 1 && !evaluating && (
+                {!evaluation ? (
                     <button
-                        onClick={() => {
-                            setEvaluation(null);
-                            setAnswer('');
-                            setCurrentIdx(currentIdx + 1);
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                        className="text-indigo-500 font-bold hover:underline"
+                        onClick={handleEvaluate}
+                        disabled={evaluating || !answer.trim()}
+                        className="w-full max-w-md py-6 bg-indigo-500 text-white rounded-[24px] font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 shadow-2xl shadow-indigo-500/25"
                     >
-                        Next Question
+                        {evaluating ? (
+                            <>
+                                <Loader2 className="animate-spin" size={24} />
+                                Evaluating Response...
+                            </>
+                        ) : (
+                            <>
+                                <Send size={20} />
+                                Evaluate Answer
+                            </>
+                        )}
                     </button>
+                ) : (
+                    <div className="w-full flex flex-col items-center gap-4">
+                        {!isLastQuestion ? (
+                            <button
+                                onClick={() => {
+                                    setEvaluation(null);
+                                    setAnswer('');
+                                    setCurrentIdx(currentIdx + 1);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="w-full max-w-md py-6 bg-foreground text-background rounded-[24px] font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-2xl"
+                            >
+                                Next Question
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleGenerateSummary}
+                                disabled={summaryLoading}
+                                className="w-full max-w-md py-6 bg-indigo-600 text-white rounded-[24px] font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-2xl shadow-indigo-600/25"
+                            >
+                                {summaryLoading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={24} />
+                                        Finalizing Report...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Award size={24} />
+                                        See Final Readiness Report
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        {error && <p className="text-rose-500 text-sm font-bold">{error}</p>}
+                    </div>
                 )}
             </div>
 
