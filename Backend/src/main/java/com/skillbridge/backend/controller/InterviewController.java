@@ -1,7 +1,6 @@
 package com.skillbridge.backend.controller;
 
-import com.skillbridge.backend.dto.InterviewGenerationRequestDTO;
-import com.skillbridge.backend.dto.InterviewGenerationResponseDTO;
+import com.skillbridge.backend.dto.*;
 import com.skillbridge.backend.service.SkillBridgeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +25,22 @@ public class InterviewController {
             return ResponseEntity.badRequest().build();
         }
 
-        // Handle empty arrays gracefully in service if needed,
-        // but here we just pass them along.
-
         try {
             InterviewGenerationResponseDTO response = skillBridgeService.generateInterviewQuestions(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/evaluate-answer")
+    public ResponseEntity<AnswerEvaluationResponseDTO> evaluateAnswer(@RequestBody AnswerEvaluationRequestDTO request) {
+        if (request.getAnswer() == null || request.getAnswer().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            AnswerEvaluationResponseDTO response = skillBridgeService.evaluateAnswer(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();

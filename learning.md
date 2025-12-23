@@ -122,3 +122,16 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 - AI features are stronger when driven by context, not randomness
 - Structured AI output is essential for scalable products
 - Interviews test depth — AI must do the same
+
+
+## ⏱️ Hour 6 — Answer Evaluation Engine
+
+### Backend & AI
+- Built AI-driven interview answer evaluation
+- Implemented structured feedback with scoring
+- Simulated real interviewer-style judgment
+
+### Key Learning
+- Feedback matters more than scores
+- AI is powerful when it explains “why”
+- Structured evaluation enables better learning outcomes
