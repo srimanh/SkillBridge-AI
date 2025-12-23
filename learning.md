@@ -135,3 +135,16 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 - Feedback matters more than scores
 - AI is powerful when it explains “why”
 - Structured evaluation enables better learning outcomes
+
+
+## ⏱️ Hour 7 — Frontend Interview Flow
+
+### Frontend Development
+- Built interview question and answer flow
+- Integrated AI evaluation APIs
+- Displayed structured feedback clearly
+
+### Key Learning
+- UX clarity matters more than UI complexity
+- End-to-end flow defines product quality
+- A good demo can outweigh perfect code

@@ -8,7 +8,7 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-export const AnalysisResults = ({ results }) => {
+export const AnalysisResults = ({ results, onStartInterview }) => {
     const containerRef = useRef(null);
 
     useEffect(() => {
@@ -99,7 +99,10 @@ export const AnalysisResults = ({ results }) => {
 
             {/* Next Step Action */}
             <div className="flex justify-center pt-8">
-                <button className="px-8 py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-500/20">
+                <button
+                    onClick={onStartInterview}
+                    className="px-8 py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-500/20"
+                >
                     Start Targeted Mock Interview
                 </button>
             </div>

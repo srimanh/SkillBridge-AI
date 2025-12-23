@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AnalysisResults } from './AnalysisResults';
+import { InterviewPage } from './InterviewPage';
 import { useTheme } from '../context/ThemeContext';
 import { Sun, Moon, Sparkles, Upload, Loader2, FileText, Briefcase } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export const Dashboard = () => {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState(null);
     const [error, setError] = useState(null);
+    const [mode, setMode] = useState('analysis'); // 'analysis' or 'interview'
 
     const heroRef = useRef(null);
     const formRef = useRef(null);
@@ -103,56 +105,72 @@ export const Dashboard = () => {
                 </section>
 
                 {/* Input Section */}
-                <div ref={formRef} className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider opacity-60">
-                            <FileText size={16} />
-                            <span>Resume Content</span>
+                {mode === 'analysis' ? (
+                    <>
+                        <div ref={formRef} className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider opacity-60">
+                                    <FileText size={16} />
+                                    <span>Resume Content</span>
+                                </div>
+                                <textarea
+                                    value={resumeText}
+                                    onChange={(e) => setResumeText(e.target.value)}
+                                    placeholder="Paste your resume text here..."
+                                    className="w-full h-80 p-6 rounded-3xl bg-surface border border-border focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-all placeholder:opacity-30"
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider opacity-60">
+                                    <Briefcase size={16} />
+                                    <span>Job Description</span>
+                                </div>
+                                <textarea
+                                    value={jobDescription}
+                                    onChange={(e) => setJobDescription(e.target.value)}
+                                    placeholder="Paste the job description here..."
+                                    className="w-full h-80 p-6 rounded-3xl bg-surface border border-border focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-all placeholder:opacity-30"
+                                />
+                            </div>
+
+                            <div className="md:col-span-2 flex flex-col items-center gap-4 mt-4">
+                                {error && (
+                                    <p className="text-rose-500 text-sm font-medium animate-bounce">{error}</p>
+                                )}
+                                <button
+                                    onClick={handleAnalyze}
+                                    disabled={loading}
+                                    className="w-full max-w-md py-5 bg-foreground text-background rounded-2xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 shadow-2xl"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <Loader2 className="animate-spin" size={20} />
+                                            Analyzing Alignment...
+                                        </>
+                                    ) : (
+                                        'Analyze Resume'
+                                    )}
+                                </button>
+                            </div>
                         </div>
-                        <textarea
-                            value={resumeText}
-                            onChange={(e) => setResumeText(e.target.value)}
-                            placeholder="Paste your resume text here..."
-                            className="w-full h-80 p-6 rounded-3xl bg-surface border border-border focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-all placeholder:opacity-30"
-                        />
-                    </div>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider opacity-60">
-                            <Briefcase size={16} />
-                            <span>Job Description</span>
-                        </div>
-                        <textarea
-                            value={jobDescription}
-                            onChange={(e) => setJobDescription(e.target.value)}
-                            placeholder="Paste the job description here..."
-                            className="w-full h-80 p-6 rounded-3xl bg-surface border border-border focus:ring-2 focus:ring-indigo-500/20 focus:outline-none resize-none transition-all placeholder:opacity-30"
-                        />
-                    </div>
-
-                    <div className="md:col-span-2 flex flex-col items-center gap-4 mt-4">
-                        {error && (
-                            <p className="text-rose-500 text-sm font-medium animate-bounce">{error}</p>
-                        )}
-                        <button
-                            onClick={handleAnalyze}
-                            disabled={loading}
-                            className="w-full max-w-md py-5 bg-foreground text-background rounded-2xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 shadow-2xl"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="animate-spin" size={20} />
-                                    Analyzing Alignment...
-                                </>
-                            ) : (
-                                'Analyze Resume'
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Results Section */}
-                {results && <AnalysisResults results={results} />}
+                        {/* Results Section */}
+                        {results && <AnalysisResults
+                            results={results}
+                            onStartInterview={() => setMode('interview')}
+                        />}
+                    </>
+                ) : (
+                    <InterviewPage
+                        sessionData={{
+                            missingSkills: results.missingSkills,
+                            weakSections: results.weakSections,
+                            jobRole: "Frontend Developer" // Defaulting to Frontend Developer as per task requirements
+                        }}
+                        onBack={() => setMode('analysis')}
+                    />
+                )}
             </main>
 
             {/* Subtle Background Elements */}
