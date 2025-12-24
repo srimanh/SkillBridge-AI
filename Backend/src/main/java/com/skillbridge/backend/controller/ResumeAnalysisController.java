@@ -26,4 +26,10 @@ public class ResumeAnalysisController {
     public ResumeAnalysisResponseDTO analyzeResume(@RequestBody ResumeAnalysisRequestDTO request) {
         return skillBridgeService.analyzeResume(request);
     }
+
+    @PostMapping("/rewrite-bullet")
+    public com.skillbridge.backend.dto.BulletRewriteResponseDTO rewriteBullet(
+            @RequestBody com.skillbridge.backend.dto.BulletRewriteRequestDTO request) {
+        return skillBridgeService.rewriteBullet(request);
+    }
 }

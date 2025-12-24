@@ -148,3 +148,16 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 - UX clarity matters more than UI complexity
 - End-to-end flow defines product quality
 - A good demo can outweigh perfect code
+
+
+## ⏱️ Hour 8 — Interview Readiness Summary
+
+### Backend & Frontend
+- Aggregated interview evaluation results
+- Generated overall readiness score
+- Presented actionable career feedback
+
+### Key Learning
+- One clear metric beats many raw numbers
+- Summaries help users make decisions
+- Good products answer “what next?”
