@@ -161,3 +161,29 @@ Each entry records **what was done**, **tools used**, and **key takeaways**.
 - One clear metric beats many raw numbers
 - Summaries help users make decisions
 - Good products answer “what next?”
+
+## ⏱️ Hour 9 — Resume Bullet Rewriting
+
+### Backend & Frontend
+- Rewrote resume bullets using STAR framework
+- Converted vague tasks into impact-driven statements
+- Designed before/after comparison UI
+
+### Key Learning
+- Actionable AI features increase product value
+- Impact language matters more than raw tasks
+- Small features can dramatically improve UX
+
+
+## ⏱️ Hour 10 — Demo & Storytelling
+
+### Product & Presentation
+- Designed end-to-end demo flow
+- Created structured pitch script
+- Planned fallback demo strategy
+
+### Key Learning
+- A clear story beats complex features
+- Judges evaluate understanding, not just code
+- Good demos sell the idea in seconds
+
