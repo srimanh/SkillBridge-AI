@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AnalysisResults } from './AnalysisResults';
 import { InterviewPage } from './InterviewPage';
+import { BulletRewriter } from './BulletRewriter';
 import { useTheme } from '../context/ThemeContext';
 import { Sun, Moon, Sparkles, Upload, Loader2, FileText, Briefcase } from 'lucide-react';
 
@@ -156,10 +157,15 @@ export const Dashboard = () => {
                         </div>
 
                         {/* Results Section */}
-                        {results && <AnalysisResults
-                            results={results}
-                            onStartInterview={() => setMode('interview')}
-                        />}
+                        {results && (
+                            <>
+                                <AnalysisResults
+                                    results={results}
+                                    onStartInterview={() => setMode('interview')}
+                                />
+                                <BulletRewriter />
+                            </>
+                        )}
                     </>
                 ) : (
                     <InterviewPage

@@ -271,4 +271,51 @@ public class SkillBridgeService {
       throw new RuntimeException("Final summary generation failed: " + e.getMessage());
     }
   }
+
+  public BulletRewriteResponseDTO rewriteBullet(BulletRewriteRequestDTO request) {
+    String systemPrompt = """
+        You are an AI Career Coach that rewrites weak resume points into impact-driven bullets.
+        Your goal is to take a weak resume bullet and rewrite it using the STAR (Situation, Task, Action, Result) + Impact framework.
+
+        Strictly follow these rules:
+        1. Start with a strong action verb (e.g., Developed, Orchestrated, Optimized, Spearheaded).
+        2. Include quantifiable impact or a clear outcome.
+        3. Align the bullet with the target job role and focus skill.
+        4. Avoid vague words like "worked", "helped", "responsible for", "assisted".
+        5. Keep it concise and professional.
+        6. Do NOT invent fake metrics, but use placeholders like [X%] if a metric is needed to show impact.
+
+        You MUST return ONLY a valid JSON object matching this schema:
+        {
+          "rewrittenBullet": "The new impact-driven bullet point",
+          "whyThisIsBetter": "Brief explanation of why this rewrite is more effective"
+        }
+
+        No markdown, no explanations outside JSON.
+        """;
+
+    String userPrompt = """
+        ORIGINAL BULLET: {originalBullet}
+        TARGET ROLE: {targetRole}
+        FOCUS SKILL: {focusSkill}
+        """;
+
+    PromptTemplate template = new PromptTemplate(userPrompt);
+    Map<String, Object> model = Map.of(
+        "originalBullet", request.getOriginalBullet(),
+        "targetRole", request.getTargetRole(),
+        "focusSkill", request.getFocusSkill());
+
+    try {
+      String responseJson = chatClient.prompt()
+          .system(systemPrompt)
+          .user(template.create(model).getContents())
+          .call()
+          .content();
+
+      return objectMapper.readValue(responseJson, BulletRewriteResponseDTO.class);
+    } catch (Exception e) {
+      throw new RuntimeException("Bullet rewriting failed: " + e.getMessage());
+    }
+  }
 }
