@@ -5,7 +5,7 @@ import { AnalysisResults } from './AnalysisResults';
 import { InterviewPage } from './InterviewPage';
 import { BulletRewriter } from './BulletRewriter';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, Sparkles, Upload, Loader2, FileText, Briefcase } from 'lucide-react';
+import { Sun, Moon, Sparkles, Upload, Loader2, FileText, Briefcase, Target } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,6 +17,7 @@ export const Dashboard = () => {
     const [results, setResults] = useState(null);
     const [error, setError] = useState(null);
     const [mode, setMode] = useState('analysis'); // 'analysis' or 'interview'
+    const [targetRole, setTargetRole] = useState('');
 
     const heroRef = useRef(null);
     const formRef = useRef(null);
@@ -109,6 +110,20 @@ export const Dashboard = () => {
                 {mode === 'analysis' ? (
                     <>
                         <div ref={formRef} className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+                            <div className="md:col-span-2 space-y-4">
+                                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider opacity-60">
+                                    <Target size={16} />
+                                    <span>Target Job Role</span>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={targetRole}
+                                    onChange={(e) => setTargetRole(e.target.value)}
+                                    placeholder="e.g. Senior Java Developer / Frontend Engineer"
+                                    className="w-full p-6 rounded-3xl bg-surface border border-border focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all placeholder:opacity-30"
+                                />
+                            </div>
+
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider opacity-60">
                                     <FileText size={16} />
@@ -161,7 +176,10 @@ export const Dashboard = () => {
                             <>
                                 <AnalysisResults
                                     results={results}
-                                    onStartInterview={() => setMode('interview')}
+                                    onStartInterview={() => {
+                                        setMode('interview');
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
                                 />
                                 <BulletRewriter />
                             </>
@@ -172,7 +190,7 @@ export const Dashboard = () => {
                         sessionData={{
                             missingSkills: results.missingSkills,
                             weakSections: results.weakSections,
-                            jobRole: "Frontend Developer" // Defaulting to Frontend Developer as per task requirements
+                            jobRole: targetRole || "Software Engineer"
                         }}
                         onBack={() => setMode('analysis')}
                     />
