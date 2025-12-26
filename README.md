@@ -48,28 +48,59 @@ This creates a continuous feedback loop where users don’t just receive scores�
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Java**
-- **Spring Boot**
-- RESTful APIs
-- PDF text extraction
-- LLM integration (JSON-first responses)
+- **Java 17**
+- **Spring Boot 3.4**
+- **Google Gemini 1.5 Flash** (via Direct REST API)
+- **Backup Mode**: Automatic mock data fallback for reliable demos
 
 ### Frontend
-- **React**
+- **React + Vite**
 - **Tailwind CSS**
-- Component-based UI
-- Responsive design
+- **GSAP Animations**
+- **Lucide Icons**
 
-### AI & Prompting
-- Prompt chaining
-- Role-based system prompts
-- Structured JSON outputs
-- Semantic skill matching
-- STAR-based evaluation logic
+---
+
+## 🏃 How to Run
+
+### 1. Prerequisites
+- Java 17+ installed
+- Node.js 18+ installed
+
+### 2. Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd Backend
+   ```
+2. Configure your API Key in `src/main/resources/application.properties`:
+   ```properties
+   spring.ai.google.ai.api-key=YOUR_API_KEY
+   ```
+3. Run the Spring Boot application:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+The backend will be available at `http://localhost:8080`.
+
+### 3. Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd Frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+The application will be available at `http://localhost:5173`.
 
 ---
 
 ## 🤝 Contributing
+...
 
 Contributions are welcome and encouraged.
 

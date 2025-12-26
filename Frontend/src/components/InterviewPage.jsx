@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Send, ChevronLeft, Terminal, BrainCircuit } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, Terminal, BrainCircuit, Award } from 'lucide-react';
 import { FeedbackCard } from './FeedbackCard';
 import { ReadinessSummary } from './ReadinessSummary';
 import { clsx } from 'clsx';

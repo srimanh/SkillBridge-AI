@@ -2,7 +2,6 @@ package com.skillbridge.backend.service;
 
 import com.skillbridge.backend.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import org.springframework.http.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 @Service
 public class SkillBridgeService {
@@ -19,11 +17,14 @@ public class SkillBridgeService {
   private final ObjectMapper objectMapper;
   private final RestTemplate restTemplate;
 
-  @Value("${spring.ai.google.ai.api-key}")
+  @Value("${ai.api.key}")
   private String apiKey;
 
-  @Value("${spring.ai.google.ai.chat.options.model:gemini-1.5-flash}")
+  @Value("${ai.api.model}")
   private String model;
+
+  @Value("${ai.api.url}")
+  private String apiUrl;
 
   @Autowired
   public SkillBridgeService(ObjectMapper objectMapper) {
@@ -35,37 +36,51 @@ public class SkillBridgeService {
     return new HealthResponseDTO("UP", "SkillBridge AI Backend");
   }
 
-  private String callGemini(String systemPrompt, String userPrompt) {
-    String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
-
-    // Combine system and user prompt for Gemini (it doesn't have a separate system
-    // role in the same way OpenAI does in simple API)
-    // We can prepend the system instructions to the user prompt.
-    String combinedPrompt = systemPrompt + "\n\nUSER REQUEST:\n" + userPrompt;
-
+  private String callAI(String systemPrompt, String userPrompt) {
     Map<String, Object> requestBody = Map.of(
-        "contents", List.of(
-            Map.of("parts", List.of(
-                Map.of("text", combinedPrompt)))));
+        "model", model,
+        "messages", List.of(
+            Map.of("role", "system", "content", systemPrompt),
+            Map.of("role", "user", "content", userPrompt)));
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.set("Authorization", "Bearer " + apiKey);
+    headers.set("X-Title", "SkillBridge AI");
+    headers.set("HTTP-Referer", "http://localhost:8080");
 
     HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
     try {
-      ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
-      if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-        // Extract text from Gemini response structure
-        // response.candidates[0].content.parts[0].text
-        List candidates = (List) response.getBody().get("candidates");
-        Map firstCandidate = (Map) candidates.get(0);
-        Map content = (Map) firstCandidate.get("content");
-        List parts = (List) content.get("parts");
-        Map firstPart = (Map) parts.get(0);
-        String text = (String) firstPart.get("text");
+      System.out.println("Calling AI API (OpenRouter): " + apiUrl);
+      System.out.println("Model: " + model);
 
-        // Clean up markdown code blocks if the AI includes them
+      ResponseEntity<Map<?, ?>> response = restTemplate.postForEntity(apiUrl, entity,
+          (Class<Map<?, ?>>) (Class<?>) Map.class);
+
+      System.out.println("AI Response Status: " + response.getStatusCode());
+
+      if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+        // Extract text from OpenRouter/OpenAI response structure
+        // response.choices[0].message.content
+        List<?> choices = (List<?>) response.getBody().get("choices");
+        if (choices == null || choices.isEmpty()) {
+          throw new RuntimeException("AI returned no choices. Response: " + response.getBody());
+        }
+        Map<?, ?> firstChoice = (Map<?, ?>) choices.get(0);
+        Map<?, ?> message = (Map<?, ?>) firstChoice.get("message");
+        String text = (String) message.get("content");
+
+        if (text.contains("<think>")) {
+          int endThink = text.lastIndexOf("</think>");
+          if (endThink != -1) {
+            text = text.substring(endThink + 8).trim();
+          } else {
+            // Handle case where tag might not be closed or is different
+            text = text.replaceAll("(?s)<think>.*?</think>", "").trim();
+          }
+        }
+
         if (text.contains("```json")) {
           text = text.substring(text.indexOf("```json") + 7);
           text = text.substring(0, text.lastIndexOf("```"));
@@ -75,9 +90,16 @@ public class SkillBridgeService {
         }
 
         return text.trim();
+      } else {
+        System.err.println("AI API Error: " + response.getStatusCode() + " - " + response.getBody());
       }
     } catch (Exception e) {
-      throw new RuntimeException("Gemini API call failed: " + e.getMessage());
+      System.err.println("EXCEPTION during AI call: " + e.getMessage());
+      if (e instanceof org.springframework.web.client.HttpClientErrorException) {
+        org.springframework.web.client.HttpClientErrorException he = (org.springframework.web.client.HttpClientErrorException) e;
+        System.err.println("Response Body: " + he.getResponseBodyAsString());
+      }
+      throw new RuntimeException("AI API call failed: " + e.getMessage());
     }
     return null;
   }
@@ -113,7 +135,7 @@ public class SkillBridgeService {
         + request.getJobDescription();
 
     try {
-      String responseJson = callGemini(systemPrompt, userPrompt);
+      String responseJson = callAI(systemPrompt, userPrompt);
       return objectMapper.readValue(responseJson, ResumeAnalysisResponseDTO.class);
     } catch (Exception e) {
       System.err.println("AI Analysis failed, using mock data: " + e.getMessage());
@@ -157,7 +179,7 @@ public class SkillBridgeService {
         + "\nWEAK SECTIONS: " + request.getWeakSections();
 
     try {
-      String responseJson = callGemini(systemPrompt, userPrompt);
+      String responseJson = callAI(systemPrompt, userPrompt);
       return objectMapper.readValue(responseJson, InterviewGenerationResponseDTO.class);
     } catch (Exception e) {
       System.err.println("Interview generation failed, using mock data: " + e.getMessage());
@@ -199,7 +221,7 @@ public class SkillBridgeService {
         + request.getQuestion() + "\nCANDIDATE ANSWER: " + request.getAnswer();
 
     try {
-      String responseJson = callGemini(systemPrompt, userPrompt);
+      String responseJson = callAI(systemPrompt, userPrompt);
       return objectMapper.readValue(responseJson, AnswerEvaluationResponseDTO.class);
     } catch (Exception e) {
       System.err.println("Answer evaluation failed, using mock data: " + e.getMessage());
@@ -255,7 +277,7 @@ public class SkillBridgeService {
         + "\nSTRENGTHS: " + strengths + "\nWEAKNESSES: " + weaknesses;
 
     try {
-      String aiSummary = callGemini(systemPrompt, userPrompt);
+      String aiSummary = callAI(systemPrompt, userPrompt);
 
       InterviewSummaryResponseDTO response = new InterviewSummaryResponseDTO();
       response.setOverallScore(average);
@@ -296,7 +318,7 @@ public class SkillBridgeService {
         + "\nFOCUS SKILL: " + request.getFocusSkill();
 
     try {
-      String responseJson = callGemini(systemPrompt, userPrompt);
+      String responseJson = callAI(systemPrompt, userPrompt);
       return objectMapper.readValue(responseJson, BulletRewriteResponseDTO.class);
     } catch (Exception e) {
       System.err.println("Bullet rewriting failed, using mock data: " + e.getMessage());
